@@ -2,14 +2,6 @@
 
 API REST desarrollada con **NestJS 11** y **TypeScript** para clasificar solicitudes de soporte técnico mediante dos motores: uno tradicional basado en reglas y otro generativo que consulta la API de **Groq**.
 
-# Equipo
-
-| Integrante | Matrícula |
-|---|---:|
-| Félix | 3523110172 |
-| César | 3522110305 |
-| Claudia Espíndola López | 3522110551 |
-
 
 Repositorio: https://github.com/zimber1/motor-soporte-ia
 
