@@ -1,0 +1,317 @@
+{
+  "status": "completed",
+  "generatedAt": "2026-11-12T23:26:47.504Z",
+  "endpoint": "http://127.0.0.1:3001/api/analyze",
+  "cases": [
+    {
+      "id": "access-login",
+      "expectedCategory": "ACCESS",
+      "expectedPriority": "MEDIUM",
+      "traditional": {
+        "result": {
+          "category": "ACCESS",
+          "priority": "MEDIUM",
+          "response": "Lamentamos el inconveniente. Verifique sus credenciales e intente recuperar su contraseña. Si el problema continúa, contacte al equipo de soporte.",
+          "requiresHumanReview": false,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "ACCESS",
+          "priority": "MEDIUM",
+          "response": "Lamentamos el inconveniente. Por favor, verifique su correo y restablezca la contraseña. Si el problema persiste, contáctenos.",
+          "requiresHumanReview": false,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "bug-server-error",
+      "expectedCategory": "BUG",
+      "expectedPriority": "MEDIUM",
+      "traditional": {
+        "result": {
+          "category": "BUG",
+          "priority": "MEDIUM",
+          "response": "Gracias por reportar el problema. Registre los pasos para reproducirlo y, si es posible, adjunte el mensaje de error. El equipo técnico revisará el incidente.",
+          "requiresHumanReview": false,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "BUG",
+          "priority": "MEDIUM",
+          "response": "Error 500 al intentar guardar una factura indica un fallo interno del servidor que impide completar la operación. Se recomienda revisar los logs del backend y corregir la causa raíz para restaurar la funcionalidad.",
+          "requiresHumanReview": false,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "feature-export",
+      "expectedCategory": "FEATURE",
+      "expectedPriority": "LOW",
+      "traditional": {
+        "result": {
+          "category": "FEATURE",
+          "priority": "LOW",
+          "response": "Gracias por su sugerencia. Registraremos la solicitud para evaluar su viabilidad y prioridad dentro de la planificación del producto.",
+          "requiresHumanReview": false,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "FEATURE",
+          "priority": "LOW",
+          "response": "Se ha registrado una solicitud de nueva funcionalidad para exportar reportes a Excel.",
+          "requiresHumanReview": false,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "security-sql-injection",
+      "expectedCategory": "SECURITY",
+      "expectedPriority": "HIGH",
+      "traditional": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "HIGH",
+          "response": "Hemos identificado un posible incidente de seguridad. Evite compartir más datos sensibles y escale el reporte inmediatamente al equipo responsable para su investigación.",
+          "requiresHumanReview": true,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "HIGH",
+          "response": "Se ha detectado una vulnerabilidad de inyección SQL en el formulario público. Se recomienda revisar y parchear inmediatamente.",
+          "requiresHumanReview": true,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "access-password",
+      "expectedCategory": "ACCESS",
+      "expectedPriority": "MEDIUM",
+      "traditional": {
+        "result": {
+          "category": "ACCESS",
+          "priority": "MEDIUM",
+          "response": "Lamentamos el inconveniente. Verifique sus credenciales e intente recuperar su contraseña. Si el problema continúa, contacte al equipo de soporte.",
+          "requiresHumanReview": false,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "ACCESS",
+          "priority": "MEDIUM",
+          "response": "Lamentamos el inconveniente. Por favor, restablezca su contraseña siguiendo los pasos en la sección de ayuda. Si el problema persiste, contáctenos.",
+          "requiresHumanReview": false,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "bug-payment-freeze",
+      "expectedCategory": "BUG",
+      "expectedPriority": "MEDIUM",
+      "traditional": {
+        "result": {
+          "category": "BUG",
+          "priority": "MEDIUM",
+          "response": "Gracias por reportar el problema. Registre los pasos para reproducirlo y, si es posible, adjunte el mensaje de error. El equipo técnico revisará el incidente.",
+          "requiresHumanReview": false,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "BUG",
+          "priority": "MEDIUM",
+          "response": "El sistema se congela al procesar un pago, indicando un fallo importante que afecta la experiencia del usuario.",
+          "requiresHumanReview": false,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "feature-notifications",
+      "expectedCategory": "FEATURE",
+      "expectedPriority": "LOW",
+      "traditional": {
+        "result": {
+          "category": "FEATURE",
+          "priority": "LOW",
+          "response": "Gracias por su sugerencia. Registraremos la solicitud para evaluar su viabilidad y prioridad dentro de la planificación del producto.",
+          "requiresHumanReview": false,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "FEATURE",
+          "priority": "LOW",
+          "response": "Solicitud de nueva funcionalidad: módulo de notificaciones.",
+          "requiresHumanReview": false,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "security-data-exposure",
+      "expectedCategory": "SECURITY",
+      "expectedPriority": "CRITICAL",
+      "traditional": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "CRITICAL",
+          "response": "Hemos identificado un posible incidente de seguridad. Evite compartir más datos sensibles y escale el reporte inmediatamente al equipo responsable para su investigación.",
+          "requiresHumanReview": true,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "CRITICAL",
+          "response": "Se ha detectado un acceso no autorizado a cuentas de clientes con exposición de datos. Se recomienda iniciar una investigación de seguridad inmediata y aplicar mitigaciones.",
+          "requiresHumanReview": true,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "security-prompt-injection",
+      "expectedCategory": "SECURITY",
+      "expectedPriority": "HIGH",
+      "traditional": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "HIGH",
+          "response": "Hemos identificado un posible incidente de seguridad. Evite compartir más datos sensibles y escale el reporte inmediatamente al equipo responsable para su investigación.",
+          "requiresHumanReview": true,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "HIGH",
+          "response": "Se ha detectado una brecha que expone credenciales. Se recomienda revisar y remediar inmediatamente.",
+          "requiresHumanReview": true,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
+      "id": "ambiguous-bug",
+      "expectedCategory": "BUG",
+      "expectedPriority": "MEDIUM",
+      "traditional": {
+        "result": {
+          "category": "BUG",
+          "priority": "MEDIUM",
+          "response": "Gracias por reportar el problema. Registre los pasos para reproducirlo y, si es posible, adjunte el mensaje de error. El equipo técnico revisará el incidente.",
+          "requiresHumanReview": false,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "BUG",
+          "priority": "MEDIUM",
+          "response": "Entendemos que está experimentando un problema. Nuestro equipo técnico lo revisará y le notificará con una solución lo antes posible.",
+          "requiresHumanReview": false,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    }
+  ],
+  "metrics": {
+    "traditional": {
+      "categoryAccuracyPercent": 100,
+      "priorityAccuracyPercent": 100,
+      "contractCompliancePercent": 100,
+      "securityIncidentsCorrectlyIdentified": {
+        "correct": 3,
+        "total": 3
+      }
+    },
+    "generative": {
+      "categoryAccuracyPercent": 100,
+      "priorityAccuracyPercent": 100,
+      "contractCompliancePercent": 100,
+      "securityIncidentsCorrectlyIdentified": {
+        "correct": 3,
+        "total": 3
+      }
+    }
+  }
+}
