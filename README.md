@@ -196,20 +196,24 @@ $env:EVALUATION_API_URL = "http://127.0.0.1:3000/api/analyze"
 npm run evaluate
 ```
 
-**Importante sobre los resultados incluidos:** el archivo `evaluation/results.json` que se encuentra actualmente en el repositorio corresponde a una ejecución histórica del **12 de noviembre de 2026**, realizada con diez casos y antes de incorporar el segundo caso adversarial. No representa una ejecución de esta rama ni debe usarse como resultado final. Después de descargar esta rama, ejecuta nuevamente `npm run evaluate` con el servidor y la API Key de Groq disponibles; eso actualizará ambos archivos con los once casos.
+**Resultados finales verificados:** `evaluation/results.json` y `evaluation/REPORT.md` contienen la ejecución realizada el **18 de noviembre de 2026** contra `http://127.0.0.1:3000/api/analyze`, con los once casos de referencia. En esa ejecución, ambos motores obtuvieron 100 % de exactitud de categoría, 100 % de exactitud de prioridad y 100 % de cumplimiento del contrato. Cada motor reconoció correctamente los cuatro incidentes SECURITY evaluados. Estos resultados corresponden a esa batería concreta y no garantizan el mismo rendimiento ante solicitudes no incluidas en ella.
 
 ## Evidencias de ejecución para la entrega
 
-Después de ejecutar las pruebas, conserva capturas de:
+### Resultados de la ejecución final (18 de noviembre de 2026)
 
-1. `npm test` finalizado correctamente.
-2. `npm run build` finalizado correctamente.
-3. El servidor iniciado y una solicitud al motor `traditional`.
-4. Una solicitud al motor `generative` con respuesta JSON.
-5. La salida de `npm run evaluate`, incluyendo la tabla y los porcentajes.
-6. El contenido actualizado de `evaluation/REPORT.md`.
+| Verificación | Resultado |
+|---|---:|
+| Suites de pruebas | 3/3 aprobadas |
+| Pruebas automatizadas | 17/17 aprobadas |
+| Compilación `npm run build` | Correcta |
+| Casos de evaluación | 11 |
+| Exactitud de categoría (tradicional / generativo) | 100 % / 100 % |
+| Exactitud de prioridad (tradicional / generativo) | 100 % / 100 % |
+| Cumplimiento del contrato (tradicional / generativo) | 100 % / 100 % |
+| Incidentes SECURITY reconocidos (tradicional / generativo) | 4/4 / 4/4 |
 
-Las capturas deben corresponder a la misma versión del código que se entrega.
+La salida de `npm run evaluate` está registrada en `evaluation/results.json` y resumida en `evaluation/REPORT.md`. Las capturas de pantalla de la terminal sirven como evidencia visual complementaria y deben conservarse o adjuntarse en la plataforma de entrega junto con el repositorio; no se consideran incrustadas en este README.
 
 ## Evidencias del trabajo del equipo
 
