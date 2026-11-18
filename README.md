@@ -166,8 +166,8 @@ Invoke-RestMethod `
 
 La batería contiene **11 casos**:
 
-- 7 casos normales de acceso, errores, funcionalidades e incidentes de seguridad.
-- 2 casos ambiguos/adversariales para comprobar si los motores ignoran instrucciones de manipulación y clasifican por el incidente real.
+- 8 casos normales de acceso, errores, funcionalidades e incidentes de seguridad.
+- 2 casos adversariales que intentan manipular la categoría o la prioridad mediante instrucciones incluidas en el ticket.
 - 1 caso ambiguo de descripción insuficiente.
 
 > La distribución exacta por tipo se incluye en `evaluation/test-cases.json`; cada registro identifica su tipo como `normal`, `ambiguous` o `adversarial`.
