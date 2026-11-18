@@ -4,12 +4,14 @@ import { resolve } from 'node:path';
 type Category = 'ACCESS' | 'BUG' | 'FEATURE' | 'SECURITY';
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 type Mode = 'traditional' | 'generative';
+type CaseType = 'normal' | 'ambiguous' | 'adversarial';
 
 interface TestCase {
   id: string;
   message: string;
   expectedCategory: Category;
   expectedPriority: Priority;
+  type?: CaseType;
 }
 
 interface AnalyzeResponse {
@@ -30,6 +32,7 @@ interface EngineResult {
 
 interface EvaluationCase {
   id: string;
+  type: CaseType;
   expectedCategory: Category;
   expectedPriority: Priority;
   traditional: EngineResult;
@@ -62,10 +65,7 @@ function isAnalyzeResponse(value: unknown, mode: Mode): value is AnalyzeResponse
   );
 }
 
-async function analyze(
-  testCase: TestCase,
-  mode: Mode,
-): Promise<EngineResult> {
+async function analyze(testCase: TestCase, mode: Mode): Promise<EngineResult> {
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -110,9 +110,9 @@ async function analyze(
 function metrics(results: EvaluationCase[], mode: Mode) {
   const engineResults = results.map((item) => item[mode]);
   const total = results.length;
-  const correctSecurityIncidents = results.filter(
+  const securityCases = results.filter((item) => item.expectedCategory === 'SECURITY');
+  const correctSecurityIncidents = securityCases.filter(
     (item) =>
-      item.expectedCategory === 'SECURITY' &&
       item[mode].result?.category === 'SECURITY' &&
       item[mode].result?.requiresHumanReview === true,
   ).length;
@@ -126,9 +126,72 @@ function metrics(results: EvaluationCase[], mode: Mode) {
       (engineResults.filter((item) => item.contractValid).length / total) * 100,
     securityIncidentsCorrectlyIdentified: {
       correct: correctSecurityIncidents,
-      total: results.filter((item) => item.expectedCategory === 'SECURITY').length,
+      total: securityCases.length,
     },
   };
+}
+
+function reportCell(value: string | undefined): string {
+  return (value ?? '—').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+}
+
+function buildReport(output: {
+  generatedAt: string;
+  endpoint: string;
+  cases: EvaluationCase[];
+  metrics: { traditional: ReturnType<typeof metrics>; generative: ReturnType<typeof metrics> };
+}): string {
+  const rows = output.cases.map((item) => {
+    const traditional = item.traditional;
+    const generative = item.generative;
+    const label = (result: EngineResult, field: 'category' | 'priority') =>
+      result.result?.[field] ?? result.error ?? '—';
+    const correct = (result: EngineResult) =>
+      result.categoryCorrect && result.priorityCorrect ? 'Sí' : 'No';
+    return `| ${item.id} | ${item.type} | ${item.expectedCategory} | ${item.expectedPriority} | ${label(traditional, 'category')} | ${label(traditional, 'priority')} | ${correct(traditional)} | ${traditional.contractValid ? 'Sí' : 'No'} | ${label(generative, 'category')} | ${label(generative, 'priority')} | ${correct(generative)} | ${generative.contractValid ? 'Sí' : 'No'} |`;
+  });
+
+  const metricRows = (['traditional', 'generative'] as const).map((mode) => {
+    const item = output.metrics[mode];
+    return `| ${mode} | ${item.categoryAccuracyPercent.toFixed(1)}% | ${item.priorityAccuracyPercent.toFixed(1)}% | ${item.contractCompliancePercent.toFixed(1)}% | ${item.securityIncidentsCorrectlyIdentified.correct}/${item.securityIncidentsCorrectlyIdentified.total} |`;
+  });
+
+  const t = output.metrics.traditional;
+  const g = output.metrics.generative;
+  const conclusion =
+    t.categoryAccuracyPercent === g.categoryAccuracyPercent &&
+    t.priorityAccuracyPercent === g.priorityAccuracyPercent &&
+    t.contractCompliancePercent === g.contractCompliancePercent
+      ? 'En esta muestra, ambos motores obtuvieron los mismos porcentajes de clasificación y cumplimiento del contrato; no hay un ganador cuantitativo. El motor tradicional ofrece resultados deterministas y no depende de un proveedor externo. El generativo puede interpretar mejor lenguaje variado y producir respuestas contextualizadas, pero depende de conectividad, cuota y disponibilidad del modelo. La elección debe considerar precisión observada, latencia, costo y necesidad de revisión humana.'
+      : 'Los resultados muestran diferencias entre los motores. La selección debe basarse en los porcentajes de categoría, prioridad y contrato de esta ejecución, además de considerar que el motor tradicional es determinista y local, mientras que el generativo depende de un proveedor externo y puede ofrecer respuestas más contextualizadas. Los incidentes SECURITY deben conservar revisión humana en ambos enfoques.';
+
+  return `# Informe comparativo de AI Support Engine
+
+- **Fecha de ejecución:** ${output.generatedAt}
+- **Endpoint:** ${output.endpoint}
+- **Casos evaluados:** ${output.cases.length}
+- **Casos normales:** ${output.cases.filter((item) => item.type === 'normal').length}
+- **Casos ambiguos:** ${output.cases.filter((item) => item.type === 'ambiguous').length}
+- **Casos adversariales:** ${output.cases.filter((item) => item.type === 'adversarial').length}
+
+## Resultados por caso
+
+| Caso | Tipo | Categoría esperada | Prioridad esperada | Tradicional: categoría | Tradicional: prioridad | Acierto T | Contrato T | Generativo: categoría | Generativo: prioridad | Acierto G | Contrato G |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+${rows.join('\n')}
+
+## Métricas generales
+
+| Motor | Exactitud de categoría | Exactitud de prioridad | Cumplimiento del contrato | Incidentes SECURITY reconocidos |
+|---|---:|---:|---:|---:|
+${metricRows.join('\n')}
+
+## Conclusión
+
+${conclusion}
+
+> Este informe se genera automáticamente con `npm run evaluate`. Los porcentajes corresponden únicamente a los casos y a la ejecución indicados arriba.
+`;
 }
 
 async function main(): Promise<void> {
@@ -139,6 +202,7 @@ async function main(): Promise<void> {
     const generative = await analyze(testCase, 'generative');
     results.push({
       id: testCase.id,
+      type: testCase.type || 'normal',
       expectedCategory: testCase.expectedCategory,
       expectedPriority: testCase.expectedPriority,
       traditional,
@@ -162,10 +226,12 @@ async function main(): Promise<void> {
     `${JSON.stringify(output, null, 2)}\n`,
     'utf8',
   );
+  writeFileSync(resolve(__dirname, 'REPORT.md'), buildReport(output), 'utf8');
 
   console.table(
     results.map((item) => ({
       id: item.id,
+      type: item.type,
       expectedCategory: item.expectedCategory,
       traditionalCategory: item.traditional.result?.category ?? item.traditional.error,
       generativeCategory: item.generative.result?.category ?? item.generative.error,
@@ -181,6 +247,8 @@ async function main(): Promise<void> {
     })),
   );
   console.log('Métricas:', JSON.stringify(output.metrics, null, 2));
+  console.log('Informe Markdown generado en evaluation/REPORT.md');
+
   if (results.some((item) => item.generative.error)) {
     console.error(
       'La evaluación generativa tuvo fallos. Revisa credenciales, cuota, modelo y conexión; no se generaron respuestas simuladas.',
