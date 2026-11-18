@@ -131,10 +131,6 @@ function metrics(results: EvaluationCase[], mode: Mode) {
   };
 }
 
-function reportCell(value: string | undefined): string {
-  return (value ?? '—').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
-}
-
 function buildReport(output: {
   generatedAt: string;
   endpoint: string;
