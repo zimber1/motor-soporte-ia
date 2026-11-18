@@ -41,7 +41,7 @@ export class TraditionalEngine {
 
     if (security) {
       category = 'SECURITY';
-      priority = /(explotad|en produccion|datos de clientes|acceso a otras cuentas|cuentas de clientes|datos expuestos|acceso no autorizado a multiples? cuentas)/i.test(text)
+      priority = /(explotad|en produccion|datos de clientes|acceso a otras cuentas|cuentas de clientes|datos expuestos|acceso no autorizado a multiples? cuentas|credenciales expuestas.*repositorio publico)/i.test(text)
         ? 'CRITICAL'
         : 'HIGH';
     } else if (/(iniciar sesion|inicio de sesion|no puedo entrar|no puedo acceder|contrasena|login|autenticacion|cuenta bloqueada|password|sign in|log ?in)/i.test(text)) {
