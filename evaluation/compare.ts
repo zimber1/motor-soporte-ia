@@ -186,7 +186,7 @@ ${metricRows.join('\n')}
 
 ${conclusion}
 
-> Este informe se genera automáticamente con `npm run evaluate`. Los porcentajes corresponden únicamente a los casos y a la ejecución indicados arriba.
+> Este informe se genera automáticamente con \`npm run evaluate\`. Los porcentajes corresponden únicamente a los casos y a la ejecución indicados arriba.
 `;
 }
 

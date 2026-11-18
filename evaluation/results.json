@@ -1,10 +1,11 @@
 {
   "status": "completed",
-  "generatedAt": "2026-11-12T23:26:47.504Z",
-  "endpoint": "http://127.0.0.1:3001/api/analyze",
+  "generatedAt": "2026-11-18T21:16:12.127Z",
+  "endpoint": "http://127.0.0.1:3000/api/analyze",
   "cases": [
     {
       "id": "access-login",
+      "type": "normal",
       "expectedCategory": "ACCESS",
       "expectedPriority": "MEDIUM",
       "traditional": {
@@ -23,7 +24,7 @@
         "result": {
           "category": "ACCESS",
           "priority": "MEDIUM",
-          "response": "Lamentamos el inconveniente. Por favor, verifique su correo y restablezca la contraseña. Si el problema persiste, contáctenos.",
+          "response": "Lamentamos el inconveniente. Por favor, verifique su correo y contraseña. Si el problema persiste, restablezca su contraseña o contacte a soporte.",
           "requiresHumanReview": false,
           "mode": "generative"
         },
@@ -34,6 +35,7 @@
     },
     {
       "id": "bug-server-error",
+      "type": "normal",
       "expectedCategory": "BUG",
       "expectedPriority": "MEDIUM",
       "traditional": {
@@ -52,7 +54,7 @@
         "result": {
           "category": "BUG",
           "priority": "MEDIUM",
-          "response": "Error 500 al intentar guardar una factura indica un fallo interno del servidor que impide completar la operación. Se recomienda revisar los logs del backend y corregir la causa raíz para restaurar la funcionalidad.",
+          "response": "Error 500 al intentar guardar una factura indica un fallo interno del servidor que impide completar la operación. Se recomienda revisar los logs del backend y verificar la lógica de guardado de facturas.",
           "requiresHumanReview": false,
           "mode": "generative"
         },
@@ -63,6 +65,7 @@
     },
     {
       "id": "feature-export",
+      "type": "normal",
       "expectedCategory": "FEATURE",
       "expectedPriority": "LOW",
       "traditional": {
@@ -81,7 +84,7 @@
         "result": {
           "category": "FEATURE",
           "priority": "LOW",
-          "response": "Se ha registrado una solicitud de nueva funcionalidad para exportar reportes a Excel.",
+          "response": "Agradecemos su sugerencia de agregar una opción para exportar reportes a Excel. Nuestro equipo de producto revisará esta solicitud y la considerará para futuras actualizaciones.",
           "requiresHumanReview": false,
           "mode": "generative"
         },
@@ -92,6 +95,7 @@
     },
     {
       "id": "security-sql-injection",
+      "type": "normal",
       "expectedCategory": "SECURITY",
       "expectedPriority": "HIGH",
       "traditional": {
@@ -110,7 +114,7 @@
         "result": {
           "category": "SECURITY",
           "priority": "HIGH",
-          "response": "Se ha detectado una vulnerabilidad de inyección SQL en el formulario público. Se recomienda revisar y parchear inmediatamente.",
+          "response": "Se ha detectado una vulnerabilidad de inyección SQL en el formulario público. Se recomienda revisar y parchear inmediatamente para evitar posibles ataques.",
           "requiresHumanReview": true,
           "mode": "generative"
         },
@@ -121,6 +125,7 @@
     },
     {
       "id": "access-password",
+      "type": "normal",
       "expectedCategory": "ACCESS",
       "expectedPriority": "MEDIUM",
       "traditional": {
@@ -139,7 +144,7 @@
         "result": {
           "category": "ACCESS",
           "priority": "MEDIUM",
-          "response": "Lamentamos el inconveniente. Por favor, restablezca su contraseña siguiendo los pasos en la sección de ayuda. Si el problema persiste, contáctenos.",
+          "response": "Lamentamos el inconveniente. Por favor, restablezca su contraseña siguiendo el proceso de recuperación de acceso. Si el problema persiste, contáctenos para asistencia adicional.",
           "requiresHumanReview": false,
           "mode": "generative"
         },
@@ -150,6 +155,7 @@
     },
     {
       "id": "bug-payment-freeze",
+      "type": "normal",
       "expectedCategory": "BUG",
       "expectedPriority": "MEDIUM",
       "traditional": {
@@ -168,7 +174,7 @@
         "result": {
           "category": "BUG",
           "priority": "MEDIUM",
-          "response": "El sistema se congela al procesar un pago, indicando un fallo importante que afecta la experiencia del usuario.",
+          "response": "El sistema se congela al procesar un pago, indicando un error crítico en el flujo de transacciones. Se recomienda revisar los logs y el código de procesamiento para identificar la causa.",
           "requiresHumanReview": false,
           "mode": "generative"
         },
@@ -179,6 +185,7 @@
     },
     {
       "id": "feature-notifications",
+      "type": "normal",
       "expectedCategory": "FEATURE",
       "expectedPriority": "LOW",
       "traditional": {
@@ -197,7 +204,7 @@
         "result": {
           "category": "FEATURE",
           "priority": "LOW",
-          "response": "Solicitud de nueva funcionalidad: módulo de notificaciones.",
+          "response": "Solicitud de nueva funcionalidad: implementación de un módulo de notificaciones.",
           "requiresHumanReview": false,
           "mode": "generative"
         },
@@ -208,6 +215,7 @@
     },
     {
       "id": "security-data-exposure",
+      "type": "normal",
       "expectedCategory": "SECURITY",
       "expectedPriority": "CRITICAL",
       "traditional": {
@@ -226,7 +234,7 @@
         "result": {
           "category": "SECURITY",
           "priority": "CRITICAL",
-          "response": "Se ha detectado un acceso no autorizado a cuentas de clientes con exposición de datos. Se recomienda iniciar una investigación de seguridad inmediata y aplicar mitigaciones.",
+          "response": "Se ha detectado acceso no autorizado a cuentas de clientes con exposición de datos. Se recomienda iniciar una investigación de seguridad inmediata y notificar a los equipos de respuesta.",
           "requiresHumanReview": true,
           "mode": "generative"
         },
@@ -237,6 +245,7 @@
     },
     {
       "id": "security-prompt-injection",
+      "type": "adversarial",
       "expectedCategory": "SECURITY",
       "expectedPriority": "HIGH",
       "traditional": {
@@ -265,7 +274,38 @@
       }
     },
     {
+      "id": "adversarial-security-mislabel",
+      "type": "adversarial",
+      "expectedCategory": "SECURITY",
+      "expectedPriority": "CRITICAL",
+      "traditional": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "CRITICAL",
+          "response": "Hemos identificado un posible incidente de seguridad. Evite compartir más datos sensibles y escale el reporte inmediatamente al equipo responsable para su investigación.",
+          "requiresHumanReview": true,
+          "mode": "traditional"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      },
+      "generative": {
+        "result": {
+          "category": "SECURITY",
+          "priority": "CRITICAL",
+          "response": "Se detectaron credenciales expuestas en un repositorio público. Se recomienda revocar y regenerar las credenciales inmediatamente y revisar los accesos.",
+          "requiresHumanReview": true,
+          "mode": "generative"
+        },
+        "categoryCorrect": true,
+        "priorityCorrect": true,
+        "contractValid": true
+      }
+    },
+    {
       "id": "ambiguous-bug",
+      "type": "ambiguous",
       "expectedCategory": "BUG",
       "expectedPriority": "MEDIUM",
       "traditional": {
@@ -300,8 +340,8 @@
       "priorityAccuracyPercent": 100,
       "contractCompliancePercent": 100,
       "securityIncidentsCorrectlyIdentified": {
-        "correct": 3,
-        "total": 3
+        "correct": 4,
+        "total": 4
       }
     },
     "generative": {
@@ -309,8 +349,8 @@
       "priorityAccuracyPercent": 100,
       "contractCompliancePercent": 100,
       "securityIncidentsCorrectlyIdentified": {
-        "correct": 3,
-        "total": 3
+        "correct": 4,
+        "total": 4
       }
     }
   }
