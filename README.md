@@ -1,6 +1,6 @@
 # AI Support Engine
 
-API REST desarrollada con **NestJS 11** y **TypeScript** para clasificar solicitudes de soporte técnico mediante dos motores: uno tradicional basado en reglas y otro generativo conectado a la API de **Groq**.
+API REST desarrollada con **NestJS 11** y **TypeScript** para clasificar solicitudes de soporte técnico mediante tres motores: uno tradicional basado en reglas, uno generativo conectado a **Groq** y uno de Machine Learning con **scikit-learn** servido por **FastAPI**.
 
 Repositorio: https://github.com/zimber1/motor-soporte-ia
 
@@ -14,7 +14,7 @@ Repositorio: https://github.com/zimber1/motor-soporte-ia
 
 ## Objetivo
 
-Clasificar solicitudes de soporte en categorías y prioridades, generar una respuesta inicial y señalar los casos que requieren revisión humana. El proyecto permite contrastar un enfoque basado en reglas con uno generativo conectado a un proveedor externo.
+Clasificar solicitudes de soporte en categorías y prioridades, generar una respuesta inicial y señalar los casos que requieren revisión humana. El proyecto permite comparar reglas deterministas, generación de texto con un proveedor externo e inferencia local de un clasificador TF-IDF.
 
 ## Arquitectura
 
@@ -22,9 +22,19 @@ El endpoint `POST /api/analyze` valida el DTO de entrada y delega el análisis s
 
 - **`TraditionalEngine`:** aplica reglas y expresiones regulares locales. No utiliza modelos de lenguaje ni necesita conexión a Internet.
 - **`GenerativeEngine`:** utiliza el SDK oficial `groq-sdk`, consulta el modelo configurado, valida la respuesta JSON y traduce los errores del proveedor a respuestas controladas.
-- **`evaluation/`:** contiene once casos de referencia, el comparador HTTP, los resultados JSON y un informe Markdown generado automáticamente.
+- **`MachineLearningEngine`:** envía el mensaje al servicio FastAPI local, valida la categoría recibida y la adapta al contrato común de NestJS.
+- **Servicio Python:** `ml-service/main.py` expone `POST /predict`; carga `ml-service/model.joblib` y predice una categoría.
+- **`evaluation/`:** contiene once casos de referencia y el comparador HTTP para los motores Traditional y Generative. El comparador actual no incluye el motor Machine Learning.
 
-Ambos motores devuelven `category`, `priority`, `response`, `requiresHumanReview` y `mode`.
+Los tres motores devuelven `category`, `priority`, `response`, `requiresHumanReview` y `mode`.
+
+### Funcionamiento de Machine Learning
+
+`ml-service/train.py` lee `ml-service/data/tickets.csv`, usa las columnas `message` y `category`, divide los datos con `test_size=0.2`, estratificación y `random_state=42`, y entrena un `Pipeline` con `TfidfVectorizer(ngram_range=(1, 2))` y `LogisticRegression(max_iter=1000)`. Imprime `classification_report` y guarda el pipeline en `ml-service/model.joblib`.
+
+El dataset actual contiene **20 registros sintéticos equilibrados** (5 por categoría). La columna `source` identifica los registros como `synthetic`; el entrenamiento usa únicamente `message` y `category`. No se usan los once casos de `evaluation/test-cases.json` para entrenar.
+
+FastAPI carga el modelo al recibir la primera predicción y lo conserva en memoria. Si el archivo no existe, `POST /predict` responde con HTTP 503. El servicio Python devuelve únicamente `category`; NestJS completa el contrato. Las prioridades del motor ML son deterministas, no predicciones del clasificador: ACCESS → MEDIUM, BUG → LOW, FEATURE → LOW y SECURITY → HIGH. Los casos SECURITY requieren revisión humana.
 
 ### Categorías
 
@@ -46,8 +56,37 @@ Toda clasificación `SECURITY` requiere revisión humana y no puede quedar en pr
 - `class-validator` y `class-transformer`.
 - SDK oficial `groq-sdk`.
 - Jest para pruebas automatizadas.
+- Python, pandas, scikit-learn, joblib, FastAPI y Uvicorn para el servicio ML.
 
-El motor generativo requiere una API Key de Groq válida, acceso al modelo y cuota disponible. El motor tradicional funciona localmente.
+El motor generativo requiere una API Key de Groq válida, acceso al modelo y cuota disponible. El motor tradicional funciona localmente. El motor ML requiere el servicio FastAPI y el modelo local generado.
+
+## Estructura del repositorio
+
+```text
+.
+├── evaluation/
+│   ├── compare.ts
+│   ├── test-cases.json
+│   ├── results.json
+│   └── REPORT.md
+├── ml-service/
+│   ├── data/
+│   │   └── tickets.csv
+│   ├── main.py
+│   ├── requirements.txt
+│   └── train.py
+├── src/
+│   ├── analyze/
+│   │   ├── dto/
+│   │   └── engines/
+│   ├── app.module.ts
+│   └── main.ts
+├── .env.example
+├── package.json
+└── README.md
+```
+
+`ml-service/.venv/` es un entorno local ignorado por Git. `ml-service/model.joblib` se genera localmente al entrenar; no debe añadirse a commits. `node_modules/` y `dist/` son directorios locales/de compilación.
 
 ## Instalación
 
@@ -72,6 +111,17 @@ PORT=3000
 ```
 
 Obtén una clave desde [Groq Console](https://console.groq.com/keys).
+
+### Servicio Python
+
+En un entorno nuevo, crea e instala el entorno virtual desde la raíz del repositorio:
+
+```powershell
+py -m venv ml-service\.venv
+.\ml-service\.venv\Scripts\python.exe -m pip install -r .\ml-service\requirements.txt
+```
+
+`requirements.txt` declara pandas, scikit-learn, joblib, FastAPI y `uvicorn[standard]`. No se fijan versiones.
 
 **Seguridad:** `.env` está excluido mediante `.gitignore`. No publiques la API Key, no la incluyas en el código fuente y no compartas el contenido de ese archivo.
 
@@ -105,6 +155,22 @@ npm run start:prod
 
 Por defecto, el servidor escucha en `http://localhost:3000`.
 
+### Entrenamiento y servicio Python
+
+El entrenamiento requiere `ml-service/data/tickets.csv` y guarda el modelo en `ml-service/model.joblib`:
+
+```powershell
+.\ml-service\.venv\Scripts\python.exe .\ml-service\train.py
+```
+
+Para atender predicciones, inicia Uvicorn desde la raíz del repositorio:
+
+```powershell
+.\ml-service\.venv\Scripts\python.exe -m uvicorn main:app --app-dir ml-service --host 127.0.0.1 --port 8000
+```
+
+El proceso NestJS usa por defecto `http://127.0.0.1:8000/predict` para el modo `machine-learning`. Se puede cambiar la URL mediante `ML_SERVICE_URL`. Mantén Uvicorn y NestJS ejecutándose en terminales separadas.
+
 ## API
 
 **Método:** `POST`
@@ -122,7 +188,7 @@ Ejemplo de solicitud:
 }
 ```
 
-El campo `mode` acepta `traditional` o `generative`. El mensaje debe tener entre 3 y 3000 caracteres. Las propiedades adicionales se rechazan.
+El campo `mode` acepta `traditional`, `generative` o `machine-learning`. El mensaje debe tener entre 3 y 3000 caracteres. Las propiedades adicionales se rechazan.
 
 Ejemplo de respuesta:
 
@@ -135,6 +201,32 @@ Ejemplo de respuesta:
   "mode": "traditional"
 }
 ```
+
+### Predicción Python
+
+**Método:** `POST`
+
+**Endpoint:** `http://127.0.0.1:8000/predict`
+
+**Content-Type:** `application/json`
+
+Solicitud:
+
+```json
+{
+  "text": "No puedo acceder a mi cuenta con mi clave"
+}
+```
+
+Respuesta:
+
+```json
+{
+  "category": "ACCESS"
+}
+```
+
+Este endpoint solo devuelve la categoría. La llamada de NestJS (`mode: "machine-learning"`) la adapta al contrato común de `/api/analyze`.
 
 Prueba desde PowerShell:
 
@@ -164,7 +256,7 @@ Invoke-RestMethod `
 
 ## Evaluación comparativa
 
-La batería contiene **11 casos**:
+La batería comparativa de `evaluation/test-cases.json` contiene **11 casos**:
 
 - 8 casos normales de acceso, errores, funcionalidades e incidentes de seguridad.
 - 2 casos adversariales que intentan manipular la categoría o la prioridad mediante instrucciones incluidas en el ticket.
@@ -184,7 +276,7 @@ En otra terminal ejecuta:
 npm run evaluate
 ```
 
-El comparador consulta ambos motores para cada caso, valida el contrato de respuesta y calcula exactitud de categoría, exactitud de prioridad, cumplimiento del contrato y reconocimiento de incidentes SECURITY. Los resultados se guardan en:
+El comparador actual consulta únicamente Traditional y Generative para cada caso, valida el contrato de respuesta y calcula exactitud de categoría, exactitud de prioridad, cumplimiento del contrato y reconocimiento de incidentes SECURITY. No evalúa Machine Learning. Los resultados se guardan en:
 
 - `evaluation/results.json`: resultados estructurados para análisis posterior.
 - `evaluation/REPORT.md`: tabla comparativa por caso, porcentajes y conclusión técnica en Markdown.
@@ -196,20 +288,38 @@ $env:EVALUATION_API_URL = "http://127.0.0.1:3000/api/analyze"
 npm run evaluate
 ```
 
-**Importante sobre los resultados incluidos:** el archivo `evaluation/results.json` que se encuentra actualmente en el repositorio corresponde a una ejecución histórica del **12 de noviembre de 2026**, realizada con diez casos y antes de incorporar el segundo caso adversarial. No representa una ejecución de esta rama ni debe usarse como resultado final. Después de descargar esta rama, ejecuta nuevamente `npm run evaluate` con el servidor y la API Key de Groq disponibles; eso actualizará ambos archivos con los once casos.
+**Evaluación comparativa histórica:** `evaluation/results.json` y `evaluation/REPORT.md` registran la ejecución del **18 de noviembre de 2026** contra `http://127.0.0.1:3000/api/analyze`, con los once casos de referencia. En esa ejecución, Traditional y Generative obtuvieron 100 % de exactitud de categoría, 100 % de exactitud de prioridad y 100 % de cumplimiento del contrato; ambos reconocieron los cuatro incidentes SECURITY. Esos resultados son históricos, solo cubren esos dos motores y no describen el rendimiento de Machine Learning.
+
+### Evaluación actual del clasificador ML
+
+El entrenamiento evaluó una partición estratificada de cuatro registros sintéticos (uno por categoría). El informe real de `classification_report` fue:
+
+| Categoría | Precisión | Recall | F1 | Soporte |
+|---|---:|---:|---:|---:|
+| ACCESS | 0.00 | 0.00 | 0.00 | 1 |
+| BUG | 0.00 | 0.00 | 0.00 | 1 |
+| FEATURE | 0.00 | 0.00 | 0.00 | 1 |
+| SECURITY | 0.25 | 1.00 | 0.40 | 1 |
+| **Accuracy** |  |  | **0.25** | **4** |
+| **F1 macro** |  |  | **0.10** | **4** |
+
+El conjunto es pequeño y sintético; estas métricas no representan rendimiento en tickets reales. La evaluación generó advertencias de precisión indefinida para clases sin predicciones.
 
 ## Evidencias de ejecución para la entrega
 
-Después de ejecutar las pruebas, conserva capturas de:
+### Verificaciones de la implementación actual
 
-1. `npm test` finalizado correctamente.
-2. `npm run build` finalizado correctamente.
-3. El servidor iniciado y una solicitud al motor `traditional`.
-4. Una solicitud al motor `generative` con respuesta JSON.
-5. La salida de `npm run evaluate`, incluyendo la tabla y los porcentajes.
-6. El contenido actualizado de `evaluation/REPORT.md`.
+| Verificación | Resultado |
+|---|---:|
+| Compilación `npm run build` | Correcta |
+| Pruebas Analyze/Traditional | 16 aprobadas |
+| Prueba de integración Generative | Omitida para evitar una llamada externa a Groq |
+| FastAPI con Uvicorn y `POST /predict` | HTTP 200; devolvió `ACCESS` |
+| Carga e inferencia de `model.joblib` mediante FastAPI | Correcta |
+| Dataset ML | 20 registros sintéticos equilibrados |
+| Accuracy / F1 macro del conjunto de prueba ML | 25 % / 0.10 |
 
-Las capturas deben corresponder a la misma versión del código que se entrega.
+La ejecución comparativa de once casos descrita arriba es histórica y solo cubre Traditional y Generative. La prueba Generative omitida no confirma el estado actual de conectividad o cuota de Groq.
 
 ## Evidencias del trabajo del equipo
 
@@ -240,9 +350,12 @@ Por esa razón, las evidencias de esta sección se presentan como **evidencia t�
 - El motor generativo depende de la conectividad, disponibilidad, permisos y cuota de Groq.
 - Las clasificaciones generativas pueden contener errores y deben tratarse como apoyo al equipo de soporte.
 - La evaluación depende de los casos de referencia y de la configuración utilizada; once casos no representan todos los escenarios posibles.
+- El clasificador ML se entrenó con solo 20 registros sintéticos. Su conjunto de prueba contiene cuatro registros y obtuvo 25 % de accuracy y 0.10 de F1 macro; no debe considerarse validado para producción ni para datos reales.
+- El motor ML predice categoría, no prioridad ni confianza. NestJS asigna prioridades fijas por categoría; el resultado sigue requiriendo evaluación antes de uso operativo.
+- NestJS necesita que FastAPI esté disponible en `ML_SERVICE_URL` (por defecto `http://127.0.0.1:8000/predict`) para el modo Machine Learning.
 - La protección contra instrucciones maliciosas en el texto es una mitigación basada en prompt y no una garantía absoluta.
 - Los incidentes de seguridad requieren revisión humana; el sistema no debe tomar decisiones críticas de seguridad de forma autónoma.
 
 ## Conclusión
 
-El motor tradicional ofrece clasificación determinista, local y fácil de auditar, aunque depende de patrones previamente definidos. El motor generativo interpreta mensajes más variados y redacta respuestas contextualizadas, pero depende de un servicio externo y puede producir resultados inconsistentes. La comparación debe considerar por separado la exactitud de categoría, prioridad y contrato, además de los casos adversariales. Ningún resultado sustituye la revisión humana de incidentes SECURITY. Los porcentajes definitivos deben tomarse del informe generado por la ejecución final de los once casos, no de resultados históricos.
+Traditional ofrece clasificación determinista y local; Generative puede interpretar mensajes variados, pero depende de Groq; Machine Learning realiza inferencia local mediante el servicio Python, aunque su rendimiento actual es bajo y se basa en datos sintéticos. La evaluación comparativa de once casos solo cubre los dos primeros motores. Ningún resultado sustituye la revisión humana de incidentes SECURITY.
