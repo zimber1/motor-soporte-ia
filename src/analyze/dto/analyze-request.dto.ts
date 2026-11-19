@@ -9,6 +9,6 @@ export class AnalyzeRequestDto {
   message: string;
 
   @IsString()
-  @IsIn(['traditional', 'generative'])
-  mode: 'traditional' | 'generative';
+  @IsIn(['traditional', 'generative', 'machine-learning'])
+  mode: 'traditional' | 'generative' | 'machine-learning';
 }

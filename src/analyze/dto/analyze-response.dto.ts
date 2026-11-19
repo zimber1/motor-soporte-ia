@@ -1,6 +1,6 @@
 export type Category = 'ACCESS' | 'BUG' | 'FEATURE' | 'SECURITY';
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type Mode = 'traditional' | 'generative';
+export type Mode = 'traditional' | 'generative' | 'machine-learning';
 
 export interface AnalyzeResponse {
   category: Category;

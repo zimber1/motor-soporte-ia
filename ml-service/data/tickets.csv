@@ -1,0 +1,21 @@
+message,category,source
+"El portal vuelve a pedirme las credenciales después de aceptar mi contraseña.",ACCESS,synthetic
+"No recibo el código temporal para validar el acceso a mi perfil.",ACCESS,synthetic
+"El enlace de recuperación de clave caducó antes de que pudiera abrirlo.",ACCESS,synthetic
+"Mi usuario aparece bloqueado cuando intento entrar al espacio de trabajo.",ACCESS,synthetic
+"La página de acceso rechaza el código de verificación que acabo de recibir.",ACCESS,synthetic
+"El filtro por fechas oculta registros que deberían aparecer en el historial.",BUG,synthetic
+"Al guardar los cambios del perfil la pantalla queda cargando indefinidamente.",BUG,synthetic
+"El importe mostrado en el resumen no coincide con el detalle de movimientos.",BUG,synthetic
+"La descarga del informe no responde cuando selecciono el formato CSV.",BUG,synthetic
+"La búsqueda de solicitudes muestra una página vacía al consultar un término válido.",BUG,synthetic
+"Sería conveniente poder asignar etiquetas propias a las solicitudes de soporte.",FEATURE,synthetic
+"Propongo incorporar una vista de calendario para planificar las tareas del equipo.",FEATURE,synthetic
+"Necesitamos programar el envío automático de un resumen cada semana.",FEATURE,synthetic
+"Solicito guardar filtros personalizados para reutilizarlos en futuras consultas.",FEATURE,synthetic
+"Nos gustaría disponer de atajos de teclado en el editor de notas.",FEATURE,synthetic
+"Un enlace de invitación permite acceder al espacio aun después de su vencimiento.",SECURITY,synthetic
+"Una cuenta de solo lectura puede consultar información de otra organización.",SECURITY,synthetic
+"La recuperación de cuenta indica públicamente si un correo está registrado.",SECURITY,synthetic
+"La sesión permanece activa después de revocar el acceso del dispositivo.",SECURITY,synthetic
+"Es posible alterar un parámetro de consulta para ver datos de otro usuario.",SECURITY,synthetic

@@ -4,3 +4,14 @@ dist/
 coverage/
 *.log
 .DS_Store
+
+# Python
+ml-service/.venv/
+ml-service/__pycache__/
+ml-service/**/*.pyc
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Generated machine learning model
+ml-service/model.joblib
