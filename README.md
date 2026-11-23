@@ -114,13 +114,19 @@ Obtén una clave desde [Groq Console](https://console.groq.com/keys).
 
 ### Servicio Python
 
-Instala las dependencias del servicio Python en el entorno que ya utilizas:
+Para instalar las bibliotecas requeridas por el entrenamiento (como en las diapositivas):
+
+```powershell
+python -m pip install pandas scikit-learn
+```
+
+Para instalar también las dependencias del servicio FastAPI:
 
 ```powershell
 python -m pip install -r .\ml-service\requirements.txt
 ```
 
-No es necesario instalar Anaconda, Docker ni crear otro entorno virtual si ya tienes Python configurado.
+Ejecuta los comandos en el entorno de Python que ya utilizas. No es necesario instalar Anaconda, Docker ni crear otro entorno virtual si ya tienes Python configurado.
 
 `requirements.txt` declara pandas, scikit-learn, joblib, FastAPI y Uvicorn sin extras opcionales para reducir el espacio utilizado. No se fijan versiones.
 
