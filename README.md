@@ -336,12 +336,6 @@ Esta sección reúne las evidencias técnicas disponibles en el historial del re
 | Pruebas unitarias | Pruebas del motor tradicional para acceso, errores, funcionalidades y seguridad | [Ver commit](https://github.com/zimber1/motor-soporte-ia/commit/beadf3b48d136552a81580030f5fa9660fea1f81) |
 | Documentación | Instrucciones de instalación, API, pruebas y evaluación | [Ver documentación](https://github.com/zimber1/motor-soporte-ia/commit/841006a0b3b557fbc4f43553df65dfed2b94ea83) |
 
-### Evidencia individual y trazabilidad
-
-Los integrantes registrados para el proyecto son Félix, César y Claudia Espíndola López. El historial consultado muestra los commits anteriores registrados bajo la cuenta de GitHub `zimber1`; no presenta una separación verificable de esos cambios por integrante.
-
-Por esa razón, las evidencias de esta sección se presentan como **evidencia técnica compartida del proyecto** y no se asignan individualmente a una persona sin respaldo en los metadatos de GitHub. Las matrículas identifican a los integrantes, pero no demuestran por sí solas la autoría de un commit.
-
 ## Limitaciones
 
 - El motor tradicional depende de las reglas implementadas y puede no reconocer mensajes fuera de los patrones previstos.
