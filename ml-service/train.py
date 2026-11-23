@@ -84,6 +84,24 @@ def main() -> None:
     model.fit(X_train, y_train)
     predictions = model.predict(X_test)
 
+    # Regression probes for representative messages outside the CSV rows.
+    smoke_tests = [
+        ("La aplicación se cierra inesperadamente cuando intento registrar una venta", "BUG"),
+        ("No puedo iniciar sesión porque mi contraseña aparece como incorrecta", "ACCESS"),
+        ("Quiero que el sistema permita programar reportes automáticamente cada semana", "FEATURE"),
+        ("Un usuario puede consultar archivos privados de otra organización", "SECURITY"),
+    ]
+    smoke_predictions = model.predict([message for message, _ in smoke_tests])
+    smoke_failures = []
+    print("\nPruebas rápidas de regresión:")
+    for (message, expected), predicted in zip(smoke_tests, smoke_predictions):
+        status = "OK" if predicted == expected else "REVISAR"
+        print(f"[{status}] esperado={expected} | obtenido={predicted} | {message}")
+        if predicted != expected:
+            smoke_failures.append((message, expected, str(predicted)))
+    if smoke_failures:
+        print(f"ADVERTENCIA: {len(smoke_failures)} de {len(smoke_tests)} pruebas no coincidieron.")
+
     accuracy = accuracy_score(y_test, predictions)
     precision, recall, f1, _ = precision_recall_fscore_support(
         y_test, predictions, labels=CATEGORIES, average="macro", zero_division=0
