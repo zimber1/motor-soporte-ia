@@ -30,9 +30,9 @@ Los tres motores devuelven `category`, `priority`, `response`, `requiresHumanRev
 
 ### Funcionamiento de Machine Learning
 
-`ml-service/train.py` lee `ml-service/data/tickets.csv`, usa las columnas `message` y `category`, divide los datos con `test_size=0.2`, estratificación y `random_state=42`, y entrena un `Pipeline` con `TfidfVectorizer(ngram_range=(1, 2))` y `LogisticRegression(max_iter=1000)`. Imprime `classification_report` y guarda el pipeline en `ml-service/model.joblib`.
+`ml-service/train.py` valida `ml-service/data/tickets.csv` antes de entrenar. Conserva el flujo supervisado solicitado: `train_test_split(test_size=0.2, stratify=..., random_state=42)`, un `Pipeline` con `TfidfVectorizer(ngram_range=(1, 2))` y `LogisticRegression(max_iter=1000)`. Evalúa únicamente el conjunto TEST con Accuracy, Precision, Recall, F1-score, `classification_report` y matriz de confusión. Guarda y vuelve a cargar el pipeline comprimido en `ml-service/model.joblib` para verificar la persistencia.
 
-El dataset actual contiene **20 registros sintéticos equilibrados** (5 por categoría). La columna `source` identifica los registros como `synthetic`; el entrenamiento usa únicamente `message` y `category`. No se usan los once casos de `evaluation/test-cases.json` para entrenar.
+El dataset contiene **200 registros sintéticos equilibrados**: 50 por categoría (ACCESS, BUG, FEATURE y SECURITY). Todos los mensajes son distintos y la columna `source` tiene el valor `synthetic`. El entrenamiento utiliza `message` como entrada y `category` como etiqueta; `source` se usa para validar el origen de los ejemplos. Los once casos de `evaluation/test-cases.json` no se incorporan al entrenamiento.
 
 FastAPI carga el modelo al recibir la primera predicción y lo conserva en memoria. Si el archivo no existe, `POST /predict` responde con HTTP 503. El servicio Python devuelve únicamente `category`; NestJS completa el contrato. Las prioridades del motor ML son deterministas, no predicciones del clasificador: ACCESS → MEDIUM, BUG → LOW, FEATURE → LOW y SECURITY → HIGH. Los casos SECURITY requieren revisión humana.
 
@@ -114,14 +114,21 @@ Obtén una clave desde [Groq Console](https://console.groq.com/keys).
 
 ### Servicio Python
 
-En un entorno nuevo, crea e instala el entorno virtual desde la raíz del repositorio:
+Para instalar las bibliotecas requeridas por el entrenamiento (como en las diapositivas):
 
 ```powershell
-py -m venv ml-service\.venv
-.\ml-service\.venv\Scripts\python.exe -m pip install -r .\ml-service\requirements.txt
+python -m pip install pandas scikit-learn
 ```
 
-`requirements.txt` declara pandas, scikit-learn, joblib, FastAPI y `uvicorn[standard]`. No se fijan versiones.
+Para instalar también las dependencias del servicio FastAPI:
+
+```powershell
+python -m pip install -r .\ml-service\requirements.txt
+```
+
+Ejecuta los comandos en el entorno de Python que ya utilizas. No es necesario instalar Anaconda, Docker ni crear otro entorno virtual si ya tienes Python configurado.
+
+`requirements.txt` declara pandas, scikit-learn, joblib, FastAPI y Uvicorn sin extras opcionales para reducir el espacio utilizado. No se fijan versiones.
 
 **Seguridad:** `.env` está excluido mediante `.gitignore`. No publiques la API Key, no la incluyas en el código fuente y no compartas el contenido de ese archivo.
 
@@ -290,20 +297,11 @@ npm run evaluate
 
 **Evaluación comparativa histórica:** `evaluation/results.json` y `evaluation/REPORT.md` registran la ejecución del **18 de noviembre de 2026** contra `http://127.0.0.1:3000/api/analyze`, con los once casos de referencia. En esa ejecución, Traditional y Generative obtuvieron 100 % de exactitud de categoría, 100 % de exactitud de prioridad y 100 % de cumplimiento del contrato; ambos reconocieron los cuatro incidentes SECURITY. Esos resultados son históricos, solo cubren esos dos motores y no describen el rendimiento de Machine Learning.
 
-### Evaluación actual del clasificador ML
+### Evaluación del clasificador ML
 
-El entrenamiento evaluó una partición estratificada de cuatro registros sintéticos (uno por categoría). El informe real de `classification_report` fue:
+La partición estratificada reserva 160 registros para TRAIN y 40 para TEST (10 por categoría). El entrenamiento imprime Accuracy, Precision, Recall y F1-score macro, además del reporte de clasificación y la matriz de confusión.
 
-| Categoría | Precisión | Recall | F1 | Soporte |
-|---|---:|---:|---:|---:|
-| ACCESS | 0.00 | 0.00 | 0.00 | 1 |
-| BUG | 0.00 | 0.00 | 0.00 | 1 |
-| FEATURE | 0.00 | 0.00 | 0.00 | 1 |
-| SECURITY | 0.25 | 1.00 | 0.40 | 1 |
-| **Accuracy** |  |  | **0.25** | **4** |
-| **F1 macro** |  |  | **0.10** | **4** |
-
-El conjunto es pequeño y sintético; estas métricas no representan rendimiento en tickets reales. La evaluación generó advertencias de precisión indefinida para clases sin predicciones.
+En una ejecución de comprobación con el dataset sintético incluido, el pipeline obtuvo 100 % en estas métricas y clasificó correctamente los 40 ejemplos de TEST. **Este resultado no debe interpretarse como rendimiento esperado en producción:** los mensajes fueron generados mediante plantillas sintéticas y TRAIN/TEST comparten estructuras lingüísticas. Para medir generalización real se necesita un conjunto independiente de tickets representativos, revisados y etiquetados por personas.
 
 ## Evidencias de ejecución para la entrega
 
@@ -350,7 +348,7 @@ Por esa razón, las evidencias de esta sección se presentan como **evidencia t�
 - El motor generativo depende de la conectividad, disponibilidad, permisos y cuota de Groq.
 - Las clasificaciones generativas pueden contener errores y deben tratarse como apoyo al equipo de soporte.
 - La evaluación depende de los casos de referencia y de la configuración utilizada; once casos no representan todos los escenarios posibles.
-- El clasificador ML se entrenó con solo 20 registros sintéticos. Su conjunto de prueba contiene cuatro registros y obtuvo 25 % de accuracy y 0.10 de F1 macro; no debe considerarse validado para producción ni para datos reales.
+- El clasificador ML utiliza 200 registros sintéticos y una partición TEST de 40 ejemplos. Las métricas sobre textos sintéticos no demuestran rendimiento en producción; se requiere validación posterior con tickets reales, representativos y etiquetados.
 - El motor ML predice categoría, no prioridad ni confianza. NestJS asigna prioridades fijas por categoría; el resultado sigue requiriendo evaluación antes de uso operativo.
 - NestJS necesita que FastAPI esté disponible en `ML_SERVICE_URL` (por defecto `http://127.0.0.1:8000/predict`) para el modo Machine Learning.
 - La protección contra instrucciones maliciosas en el texto es una mitigación basada en prompt y no una garantía absoluta.
