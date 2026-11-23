@@ -117,6 +117,13 @@ def main() -> None:
     print(CATEGORIES)
     print(confusion_matrix(y_test, predictions, labels=CATEGORIES))
 
+    new_message = ["Encontré datos de otros clientes"]
+    category = model.predict(new_message)[0]
+    confidence = model.predict_proba(new_message).max()
+
+    print("Categoría:", category)
+    print("Score aproximado:", round(confidence, 3))
+
     joblib.dump(model, MODEL_PATH, compress=3)
     loaded_model = joblib.load(MODEL_PATH)
     sample_prediction = loaded_model.predict([X_test.iloc[0]])[0]
