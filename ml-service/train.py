@@ -117,16 +117,12 @@ def main() -> None:
     print(CATEGORIES)
     print(confusion_matrix(y_test, predictions, labels=CATEGORIES))
 
-    # Predict a new message that was not part of the training dataset.
     new_message = ["Encontré datos de otros clientes"]
-    new_category = model.predict(new_message)[0]
+    category = model.predict(new_message)[0]
     confidence = model.predict_proba(new_message).max()
 
-    print("\nPredicción de un mensaje nuevo:")
-    print("Mensaje:", new_message[0])
-    print("Categoría:", new_category)
-    print("Score aproximado:", round(float(confidence), 3))
-    print("Nota: el score es una probabilidad estimada por el modelo, no una garantía de acierto.")
+    print("Categoría:", category)
+    print("Score aproximado:", round(confidence, 3))
 
     joblib.dump(model, MODEL_PATH, compress=3)
     loaded_model = joblib.load(MODEL_PATH)
