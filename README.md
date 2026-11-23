@@ -30,9 +30,9 @@ Los tres motores devuelven `category`, `priority`, `response`, `requiresHumanRev
 
 ### Funcionamiento de Machine Learning
 
-`ml-service/train.py` valida `ml-service/data/tickets.csv` antes de entrenar. Conserva el flujo supervisado solicitado: `train_test_split(test_size=0.2, stratify=..., random_state=42)`, un `Pipeline` con `TfidfVectorizer(ngram_range=(1, 2))` y `LogisticRegression(max_iter=1000)`. Evalúa únicamente el conjunto TEST con Accuracy, Precision, Recall, F1-score, `classification_report` y matriz de confusión. Guarda y vuelve a cargar el pipeline comprimido en `ml-service/model.joblib` para verificar la persistencia.
+`ml-service/train.py` valida `ml-service/data/tickets.csv` antes de entrenar. La columna `split` fija los 160 casos de entrenamiento y los 40 casos reservados para prueba. El pipeline ajusta `TfidfVectorizer(ngram_range=(1, 2))` y `LogisticRegression(max_iter=1000)` con las filas `train`. Calcula las métricas de categoría sobre las filas `test` y vuelve a cargar el modelo guardado en `ml-service/model.joblib` para comprobar su persistencia.
 
-El dataset contiene **200 registros sintéticos equilibrados**: 50 por categoría (ACCESS, BUG, FEATURE y SECURITY). Todos los mensajes son distintos y la columna `source` tiene el valor `synthetic`. El entrenamiento utiliza `message` como entrada y `category` como etiqueta; `source` se usa para validar el origen de los ejemplos. Los once casos de `evaluation/test-cases.json` no se incorporan al entrenamiento.
+El dataset contiene **200 registros sintéticos equilibrados**, con 50 por categoría (ACCESS, BUG, FEATURE y SECURITY). Conserva 160 ejemplos de la rama base e incorpora 40 tickets de prueba redactados por separado, sin reutilizar sus plantillas. El entrenamiento utiliza `message` como entrada y `category` como etiqueta. La columna `source` registra el origen sintético. El [Excel de revisión](ml-service/data/tickets-revision.xlsx) refleja esta partición y permite registrar observaciones del equipo. El script lee el CSV, por lo que las anotaciones del Excel quedan separadas de los datos del modelo.
 
 FastAPI carga el modelo al recibir la primera predicción y lo conserva en memoria. Si el archivo no existe, `POST /predict` responde con HTTP 503. El servicio Python devuelve únicamente `category`; NestJS completa el contrato. Las prioridades del motor ML son deterministas, no predicciones del clasificador: ACCESS → MEDIUM, BUG → LOW, FEATURE → LOW y SECURITY → HIGH. Los casos SECURITY requieren revisión humana.
 
@@ -71,7 +71,8 @@ El motor generativo requiere una API Key de Groq válida, acceso al modelo y cuo
 │   └── REPORT.md
 ├── ml-service/
 │   ├── data/
-│   │   └── tickets.csv
+│   │   ├── tickets.csv
+│   │   └── tickets-revision.xlsx
 │   ├── main.py
 │   ├── requirements.txt
 │   └── train.py
@@ -299,9 +300,9 @@ npm run evaluate
 
 ### Evaluación del clasificador ML
 
-La partición estratificada reserva 160 registros para TRAIN y 40 para TEST (10 por categoría). El entrenamiento imprime Accuracy, Precision, Recall y F1-score macro, además del reporte de clasificación y la matriz de confusión.
+La partición fija contiene 40 ejemplos de entrenamiento y 10 de prueba por categoría. El script valida estas cantidades y busca mensajes repetidos sin distinguir mayúsculas, acentos ni signos de puntuación. Imprime exactitud, precisión, sensibilidad y F1 macro, además del reporte por categoría y la matriz de confusión. Las cuatro pruebas rápidas de regresión se informan por separado.
 
-En una ejecución de comprobación con el dataset sintético incluido, el pipeline obtuvo 100 % en estas métricas y clasificó correctamente los 40 ejemplos de TEST. **Este resultado no debe interpretarse como rendimiento esperado en producción:** los mensajes fueron generados mediante plantillas sintéticas y TRAIN/TEST comparten estructuras lingüísticas. Para medir generalización real se necesita un conjunto independiente de tickets representativos, revisados y etiquetados por personas.
+En la ejecución local, el modelo acertó 21 de 40 casos (52.5 %), con precisión macro de 70.83 %, sensibilidad macro de 52.5 % y F1 macro de 0.5418. Identificó 4 de 10 casos SECURITY. Los resultados corresponden a tickets sintéticos. Los casos de prueba quedan pendientes de revisión por el equipo y el rendimiento con tickets reales queda por medir.
 
 ## Evidencias de ejecución para la entrega
 
@@ -314,8 +315,8 @@ En una ejecución de comprobación con el dataset sintético incluido, el pipeli
 | Prueba de integración Generative | Omitida para evitar una llamada externa a Groq |
 | FastAPI con Uvicorn y `POST /predict` | HTTP 200; devolvió `ACCESS` |
 | Carga e inferencia de `model.joblib` mediante FastAPI | Correcta |
-| Dataset ML | 20 registros sintéticos equilibrados |
-| Accuracy / F1 macro del conjunto de prueba ML | 25 % / 0.10 |
+| Dataset ML | 200 registros sintéticos, 160 de entrenamiento y 40 de prueba |
+| Exactitud / F1 macro del conjunto de prueba ML | 52.5 % / 0.5418 |
 
 La ejecución comparativa de once casos descrita arriba es histórica y solo cubre Traditional y Generative. La prueba Generative omitida no confirma el estado actual de conectividad o cuota de Groq.
 
